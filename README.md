@@ -256,7 +256,7 @@ Voice IQ AI's architecture is grounded in real-world benchmark datasets:
 
 ---
 
-## 🎯 Engineering Highlights (Why Recruiters Love This Project)
+## 🎯 Engineering Highlights (Why Love This Project)
 
 - **Production-Grade Signal Processing**: Deep implementation of vocal tract mechanics (Linear Predictive Coding roots, spectral contrast, pYIN) rather than simplistic black-box wrapping.
 - **Resilient Audio Ingestion**: Handles variable audio lengths, arbitrary sample rates, stereo/mono conversions, and multiple container formats seamlessly.
