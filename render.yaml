@@ -3,7 +3,7 @@ services:
     name: voiceiq-ai
     runtime: python
     buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
-    startCommand: gunicorn --workers=2 --threads=4 --timeout=120 --bind=0.0.0.0:$PORT api.app:app
+    startCommand: gunicorn --workers=1 --threads=2 --timeout=120 --bind=0.0.0.0:$PORT app:app
     plan: free
     autoDeploy: true
     envVars:

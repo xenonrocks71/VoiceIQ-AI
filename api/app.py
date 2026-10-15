@@ -23,18 +23,30 @@ from flask_cors import CORS
 # ---------------------------------------------------------------------------
 try:
     import imageio_ffmpeg
+    import stat
 
     FFMPEG_EXE = imageio_ffmpeg.get_ffmpeg_exe()
+    if os.path.exists(FFMPEG_EXE):
+        try:
+            cur_mode = os.stat(FFMPEG_EXE).st_mode
+            os.chmod(FFMPEG_EXE, cur_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        except Exception:
+            pass
+
     ffmpeg_dir = os.path.dirname(FFMPEG_EXE)
     if ffmpeg_dir not in os.environ.get("PATH", ""):
         os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
 
-    # Ensure alias ffmpeg.exe exists in directory for tools expecting that name
-    ffmpeg_alias = os.path.join(ffmpeg_dir, "ffmpeg.exe")
-    if not os.path.exists(ffmpeg_alias) and os.path.exists(FFMPEG_EXE):
-        import shutil
-
-        shutil.copyfile(FFMPEG_EXE, ffmpeg_alias)
+    # Ensure both 'ffmpeg' and 'ffmpeg.exe' aliases exist in directory
+    for alias_name in ("ffmpeg", "ffmpeg.exe"):
+        alias_path = os.path.join(ffmpeg_dir, alias_name)
+        if not os.path.exists(alias_path) and os.path.exists(FFMPEG_EXE):
+            try:
+                import shutil
+                shutil.copyfile(FFMPEG_EXE, alias_path)
+                os.chmod(alias_path, 0o755)
+            except Exception:
+                pass
 except Exception as _ffmpeg_exc:
     FFMPEG_EXE = "ffmpeg"
 

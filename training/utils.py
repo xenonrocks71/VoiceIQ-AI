@@ -110,23 +110,24 @@ def _safe_std(feature_matrix: np.ndarray, axis: int = 1) -> np.ndarray:
 
 
 def _extract_pitch(y: np.ndarray, sr: int) -> tuple[float, float]:
-    """Extract fundamental frequency mean and std using librosa.pyin."""
+    """Extract fundamental frequency mean and std using fast librosa.yin."""
     try:
-        f0, voiced_flag, _ = librosa.pyin(
+        # Use yin for fast, robust f0 estimation in human vocal range (65 Hz to 500 Hz)
+        f0 = librosa.yin(
             y,
-            fmin=librosa.note_to_hz("C2"),
-            fmax=librosa.note_to_hz("C7"),
+            fmin=65,
+            fmax=500,
             sr=sr,
             frame_length=N_FFT,
             hop_length=HOP_LENGTH,
         )
-        voiced_f0 = f0[voiced_flag] if voiced_flag is not None else f0[~np.isnan(f0)]
-        voiced_f0 = voiced_f0[~np.isnan(voiced_f0)]
+        valid = f0[~np.isnan(f0)]
+        valid = valid[(valid >= 65) & (valid <= 500)]
 
-        if len(voiced_f0) == 0:
+        if len(valid) == 0:
             return 0.0, 0.0
 
-        return float(np.mean(voiced_f0)), float(np.std(voiced_f0))
+        return float(np.mean(valid)), float(np.std(valid))
     except Exception as exc:
         logger.warning("Pitch extraction failed: %s", exc)
         return 0.0, 0.0
@@ -157,13 +158,17 @@ def _lpc_formants(frame: np.ndarray, sr: int, order: int = LPC_ORDER) -> tuple[f
 def _extract_formants(y: np.ndarray, sr: int) -> tuple[float, float, float, float]:
     """
     Extract F1 and F2 mean + std across voiced frames.
+    Samples representative voiced frames (50 ms hop, max 40 frames) for fast LPC analysis.
     Returns (f1_mean, f1_std, f2_mean, f2_std).
     """
     frame_length = int(0.025 * sr)  # 25 ms
-    hop = int(0.010 * sr)             # 10 ms
+    hop = int(0.050 * sr)           # 50 ms step
+    max_frames = 40
 
     f1_list, f2_list = [], []
     for start in range(0, len(y) - frame_length, hop):
+        if len(f1_list) >= max_frames:
+            break
         frame = y[start : start + frame_length]
         if np.max(np.abs(frame)) < 0.01:
             continue
@@ -316,9 +321,7 @@ def extract_features_from_array(
     features.append(_extract_hnr(y, sr))
 
     # --- Tonnetz (6) ---
-    tonnetz = librosa.feature.tonnetz(
-        y=librosa.effects.harmonic(y), sr=sr
-    )
+    tonnetz = librosa.feature.tonnetz(chroma=chroma)
     features.extend(_safe_mean(tonnetz).tolist())
 
     # --- Supplementary temporal stats (2) → brings total to 179 ---
