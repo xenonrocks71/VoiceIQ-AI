@@ -15,6 +15,7 @@ import traceback
 import subprocess
 from typing import Optional
 
+import numpy as np
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -114,17 +115,23 @@ def convert_to_wav_16k(
     tmp_out_path: Optional[str] = None
 
     try:
+        # Fast-path for WAV: if soundfile can decode it in memory, write 16kHz WAV directly
+        if input_ext in (".wav", ""):
+            try:
+                import soundfile as sf
+                data, in_sr = sf.read(io.BytesIO(input_bytes))
+                if data.ndim > 1:
+                    data = np.mean(data, axis=1)
+                if in_sr != SAMPLE_RATE:
+                    data = librosa.resample(data, orig_sr=in_sr, target_sr=SAMPLE_RATE)
+                return _write_wav(data.astype(np.float32), SAMPLE_RATE)
+            except Exception as wav_err:
+                logger.warning("In-memory WAV decode skipped: %s. Falling back to disk/FFmpeg.", wav_err)
+
         # Write incoming audio to a temp file
         with tempfile.NamedTemporaryFile(suffix=input_ext, delete=False) as tmp:
             tmp.write(input_bytes)
             tmp_in_path = tmp.name
-
-        if input_ext in (".wav",):
-            try:
-                y = load_audio(tmp_in_path, sr=SAMPLE_RATE)
-                return _write_wav(y, SAMPLE_RATE)
-            except Exception:
-                pass  # Fallback to FFmpeg if soundfile encounters an unusual WAV header
 
         # Output WAV path
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
@@ -133,6 +140,7 @@ def convert_to_wav_16k(
         # Direct FFmpeg transcoding to 16 kHz mono 16-bit PCM WAV
         cmd = [
             FFMPEG_EXE,
+            "-nostdin",
             "-y",
             "-i",
             tmp_in_path,
@@ -147,20 +155,23 @@ def convert_to_wav_16k(
         ]
         proc = subprocess.run(
             cmd,
+            stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            timeout=20,
         )
 
         if proc.returncode != 0:
-            # Fallback to pydub
+            err_msg = proc.stderr.decode("utf-8", errors="ignore") if proc.stderr else "FFmpeg failed"
+            logger.warning("FFmpeg transcoding non-zero returncode %d: %s. Trying pydub...", proc.returncode, err_msg)
             from pydub import AudioSegment
-
+            AudioSegment.converter = FFMPEG_EXE
             audio = AudioSegment.from_file(tmp_in_path)
             audio = audio.set_channels(1).set_frame_rate(SAMPLE_RATE)
             audio.export(tmp_out_path, format="wav")
 
         logger.info(
-            "Converted %s → 16 kHz mono WAV (%s)",
+            "Converted %s -> 16 kHz mono WAV (%s)",
             input_ext,
             tmp_out_path,
         )
@@ -169,7 +180,10 @@ def convert_to_wav_16k(
     except Exception as exc:
         for path in (tmp_in_path, tmp_out_path):
             if path and os.path.exists(path):
-                os.remove(path)
+                try:
+                    os.remove(path)
+                except Exception:
+                    pass
         raise RuntimeError(f"Audio conversion failed: {exc}") from exc
     finally:
         if tmp_in_path and os.path.exists(tmp_in_path):

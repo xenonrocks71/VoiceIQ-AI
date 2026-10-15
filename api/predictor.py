@@ -154,16 +154,10 @@ class VoicePredictor:
                 f"Expected {FEATURE_DIM} features, got {features.shape[0]}"
             )
 
-        logger.info("Running parallel inference on 3 classifiers")
-
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            gender_future = executor.submit(self._run_gender, features)
-            age_future = executor.submit(self._run_age, features)
-            deepfake_future = executor.submit(self._run_deepfake, features)
-
-            gender, gender_conf = gender_future.result()
-            age_band, age_conf = age_future.result()
-            is_real, deepfake_label, deepfake_conf = deepfake_future.result()
+        logger.info("Running model inference on 3 classifiers")
+        gender, gender_conf = self._run_gender(features)
+        age_band, age_conf = self._run_age(features)
+        is_real, deepfake_label, deepfake_conf = self._run_deepfake(features)
 
         pitch_hz = round(float(features[163]), 1)
         f1_hz = round(float(features[165]), 1)
