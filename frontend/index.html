@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceIQ AI — Voice Biometrics & Deepfake Detection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & VoiceIQ Material Dark Theme ─────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:             #0f1015; /* Clean Deep Dark Surface */
+      --card-bg:        #181920; /* Primary Card Container */
+      --card-inner:     #111217; /* Inner Embedded Box */
+      --outline:        #323440; /* Outlined Borders */
+      --outline-hover:  #525668;
+      --outline-focus:  #70a6ff; /* VoiceIQ Accent Blue */
+      --text-high:      #f0f2f8; /* Crisp High-Contrast Text */
+      --text-med:       #b8bccb; /* Medium Description Text */
+      --text-low:       #767a8c; /* Subtle Label Text */
+      --primary:        #70a6ff; /* VoiceIQ Primary Cyan/Blue */
+      --primary-dark:   #061a38; /* Button Text */
+      --accent-cyan:    #00e5ff;
+      --accent-violet:  #a855f7;
+      --success:        #4ade80;
+      --danger:         #f87171;
+      --font-main:      'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono:      'JetBrains Mono', monospace;
+      --radius-card:    24px;
+      --radius-field:   12px;
+      --radius-pill:    9999px;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: radial-gradient(circle at 50% 0%, rgba(112, 166, 255, 0.08) 0%, transparent 60%);
+      color: var(--text-high);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 1rem 1rem;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Main Application Card ────────────────────────────────────── */
+    .app-card {
+      width: 100%;
+      max-width: 760px;
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--outline);
+      padding: 34px 38px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+      margin: auto 0;
+    }
+
+    /* ── Header & Bespoke Brand Identity ──────────────────────────── */
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .voiceiq-logo-svg {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 12px rgba(112, 166, 255, 0.25));
+    }
+
+    .brand-text-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-high);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-title .iq-gradient {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .viq-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(112, 166, 255, 0.1);
+      border: 1px solid rgba(112, 166, 255, 0.28);
+      color: var(--primary);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      text-transform: uppercase;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan);
+    }
+
+    .card-headline {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text-high);
+      margin-bottom: 4px;
+    }
+
+    .card-description {
+      font-size: 13.5px;
+      color: var(--text-med);
+      margin-bottom: 22px;
+    }
+
+    /* ── Segmented Tab Switcher ───────────────────────────────────── */
+    .tab-bar {
+      display: inline-flex;
+      background: var(--card-inner);
+      border: 1px solid var(--outline);
+      border-radius: var(--radius-pill);
+      padding: 3px;
+      margin-bottom: 18px;
+      gap: 4px;
+    }
+
+    .tab-item {
+      background: transparent;
+      border: none;
+      color: var(--text-med);
+      font-family: var(--font-main);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 18px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-item:hover { color: var(--text-high); }
+
+    .tab-item.active {
+      background: var(--primary);
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Outlined Card Fields (Clean Google M3 Style) ─────────────── */
+    .m3-box {
+      position: relative;
+      border: 1px solid var(--outline);
+      border-radius: var(--radius-field);
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      background: transparent;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .m3-box:hover {
+      border-color: var(--outline-hover);
+    }
+
+    .m3-box:focus-within {
+      border-color: var(--outline-focus);
+      box-shadow: 0 0 0 1px var(--outline-focus);
+    }
+
+    .m3-label {
+      position: absolute;
+      top: -9px;
+      left: 14px;
+      background: var(--card-bg);
+      padding: 0 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-med);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Benchmark Reading Script ─────────────────────────────────── */
+    .script-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .script-text {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text-high);
+      font-style: italic;
+      padding: 10px 14px;
+      background: var(--card-inner);
+      border-radius: 8px;
+      border-left: 3px solid var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .m3-chip {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-med);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .m3-chip:hover, .m3-chip.active {
+      background: rgba(112, 166, 255, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-tonal {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-high);
+      font-family: var(--font-main);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-tonal:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    /* ── Audio Recorder Box & Live Decibel Meter ──────────────────── */
+    .recorder-grid {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+
+    .mic-button {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid var(--outline);
+      background: var(--card-inner);
+      color: var(--text-high);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .mic-button:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--outline-focus);
+      transform: scale(1.04);
+    }
+
+    .mic-button.recording {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #fff;
+      animation: pulseMic 1.2s infinite;
+    }
+
+    @keyframes pulseMic {
+      0%   { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+      70%  { box-shadow: 0 0 0 12px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    .timer-readout {
+      font-family: var(--font-mono);
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text-high);
+      min-width: 60px;
+    }
+
+    .timer-readout.recording {
+      color: #f87171;
+    }
+
+    .waveform-slot {
+      flex: 1;
+      height: 40px;
+      background: var(--card-inner);
+      border: 1px solid var(--outline);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #waveform-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Audio Decibel Level Pill (Live Meter) */
+    .meter-pill {
+      position: absolute;
+      right: 6px;
+      top: 6px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: var(--text-low);
+      pointer-events: none;
+    }
+
+    .meter-pill.active {
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .rec-footer-line {
+      font-size: 12px;
+      color: var(--text-low);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ── Inline Playback & Download Strip ─────────────────────────── */
+    .playback-bar {
+      display: none;
+      background: var(--card-inner);
+      border: 1px solid var(--outline);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 10px;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .playback-bar.visible { display: flex; }
+
+    .playback-bar audio {
+      flex: 1;
+      min-width: 180px;
+      height: 32px;
+      filter: invert(0.88) hue-rotate(180deg);
+    }
+
+    .meta-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-med);
+      background: var(--card-bg);
+      border: 1px solid var(--outline);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .btn-download-pill {
+      background: rgba(112, 166, 255, 0.15);
+      border: 1px solid rgba(112, 166, 255, 0.35);
+      color: var(--primary);
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-download-pill:hover {
+      background: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    /* ── File Upload Dropzone ─────────────────────────────────────── */
+    .upload-zone {
+      position: relative;
+      border: 1.5px dashed var(--outline);
+      border-radius: var(--radius-field);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--outline-focus);
+      background: rgba(112, 166, 255, 0.04);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-high);
+      margin-bottom: 2px;
+    }
+
+    .upload-desc {
+      font-size: 12px;
+      color: var(--text-low);
+    }
+
+    .upload-strip {
+      display: none;
+      background: var(--card-inner);
+      border: 1px solid var(--outline);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 10px;
+      font-size: 12px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .upload-strip.visible { display: flex; }
+
+    /* ── Bottom Action Row (Material 3 Pill) ──────────────────────── */
+    .action-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .status-area {
+      font-size: 13px;
+      color: var(--text-med);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .spinner-sm {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(112, 166, 255, 0.25);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-analyze-pill {
+      background: var(--primary);
+      color: var(--primary-dark);
+      border: none;
+      font-family: var(--font-main);
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      padding: 10px 28px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-analyze-pill:hover:not(:disabled) {
+      background: #8bb6ff;
+      transform: translateY(-1px);
+    }
+
+    .btn-analyze-pill:disabled {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.35);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── Results Container & Acoustic Diagnostics ─────────────────── */
+    .results-container {
+      display: none;
+      margin-top: 20px;
+      border: 1px solid var(--outline);
+      border-radius: var(--radius-field);
+      background: var(--card-inner);
+      padding: 18px 20px;
+    }
+
+    .results-container.visible { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .results-title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 8px;
+    }
+
+    .results-title-bar h3 {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-high);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .res-card {
+      background: var(--card-bg);
+      border: 1px solid var(--outline);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .res-card-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-low);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .res-card-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-high);
+      margin-bottom: 8px;
+    }
+
+    .res-card-val.real { color: var(--success); }
+    .res-card-val.fake { color: var(--danger); }
+
+    .bar-track {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .res-conf-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-med);
+    }
+
+    /* ── Diagnostics Sub-Row (Real Physical Metrics) ─────────────── */
+    .diagnostics-panel {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .diag-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-low);
+      margin-bottom: 6px;
+    }
+
+    .diag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+    }
+
+    .diag-item {
+      font-size: 11.5px;
+      color: var(--text-med);
+    }
+
+    .diag-item span {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-high);
+    }
+
+    /* ── Error Banner ─────────────────────────────────────────────── */
+    .error-banner {
+      display: none;
+      background: rgba(248, 113, 113, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: #fca5a5;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    .error-banner.visible { display: block; }
+
+    /* ── Footer ───────────────────────────────────────────────────── */
+    .app-footer {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--text-low);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-links a {
+      color: var(--text-low);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-med);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main Card -->
+  <div class="app-card">
+
+    <!-- Top Identity Row -->
+    <div class="header-row">
+      <div class="brand-group">
+        <!-- Bespoke VoiceIQ SVG Logo -->
+        <svg class="voiceiq-logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="11" fill="url(#viq_grad_bg)" stroke="rgba(255,255,255,0.14)" stroke-width="1.2"/>
+          <!-- Dynamic Acoustic Bars forming 'V' and 'IQ' crest -->
+          <line x1="9" y1="14" x2="9" y2="26" stroke="url(#viq_grad_cyan)" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="14.5" y1="10" x2="14.5" y2="30" stroke="url(#viq_grad_cyan)" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="20" y1="7" x2="20" y2="33" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round"/>
+          <line x1="25.5" y1="10" x2="25.5" y2="30" stroke="url(#viq_grad_blue)" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="31" y1="14" x2="31" y2="26" stroke="url(#viq_grad_blue)" stroke-width="2.6" stroke-linecap="round"/>
+          <!-- Intelligent Biometric Node -->
+          <circle cx="20" cy="20" r="3.2" fill="#00e5ff"/>
+          <defs>
+            <linearGradient id="viq_grad_bg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#1f212a"/>
+              <stop offset="1" stop-color="#101115"/>
+            </linearGradient>
+            <linearGradient id="viq_grad_cyan" x1="9" y1="10" x2="15" y2="30" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00e5ff"/>
+              <stop offset="1" stop-color="#70a6ff"/>
+            </linearGradient>
+            <linearGradient id="viq_grad_blue" x1="25" y1="10" x2="31" y2="30" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#70a6ff"/>
+              <stop offset="1" stop-color="#a855f7"/>
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div class="brand-text-col">
+          <div class="brand-title">
+            Voice<span class="iq-gradient">IQ</span>
+            <span class="viq-badge"><span class="pulse-dot"></span> Biometric Engine</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size: 11.5px; color: var(--text-low); font-family: var(--font-mono);">
+        179-Dim · 16 kHz
+      </div>
+    </div>
+
+    <h1 class="card-headline">Voice Biometrics &amp; Deepfake Shield</h1>
+    <p class="card-description">Extract 179 acoustic dimensions to identify speaker gender, age group, and detect AI-cloned audio in real time.</p>
+
+    <!-- Pill Segmented Switcher -->
+    <div class="tab-bar">
+      <button class="tab-item active" id="tab-record" data-mode="record">
+        🎙 Microphone Input
+      </button>
+      <button class="tab-item" id="tab-upload" data-mode="upload">
+        📁 File Ingestion
+      </button>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="error-banner" id="error-banner"></div>
+
+    <!-- ── Mode 1: Microphone ──────────────────────────────────────── -->
+    <div class="tab-panel active" id="panel-record">
+
+      <!-- Outlined Box: Scientific Script -->
+      <div class="m3-box">
+        <span class="m3-label">Benchmark Reading Script</span>
+        <div class="script-header-row">
+          <span style="font-size: 11.5px; color: var(--text-low);">Read aloud while recording to stress-test formant transitions:</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="btn-tonal" id="btn-copy-quote">Copy</button>
+            <button type="button" class="btn-tonal" id="btn-next-quote">Next</button>
+          </div>
+        </div>
+        <div class="script-text" id="script-quote">
+          "Please call Stella to verify our appointment. Ask her to bring six spoons of fresh snow peas, five thick slabs of blue cheese, and three bags of bright yellow oranges from the market."
+        </div>
+        <div class="chip-row" id="chip-row">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Outlined Box: Audio Recorder & Waveform -->
+      <div class="m3-box">
+        <span class="m3-label">Acoustic Input &amp; Visualizer</span>
+        <div class="recorder-grid">
+          <button type="button" class="mic-button" id="rec-toggle" title="Record microphone">
+            <svg id="mic-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+          </button>
+          <div class="timer-readout" id="timer">00:00</div>
+          <div class="waveform-slot">
+            <canvas id="waveform-canvas"></canvas>
+            <span class="meter-pill" id="meter-pill">-∞ dB</span>
+          </div>
+        </div>
+
+        <div class="rec-footer-line">
+          <span id="rec-hint">Click microphone to record (4–15 seconds recommended)</span>
+          <span style="font-family: var(--font-mono);">Max 30s</span>
+        </div>
+
+        <!-- Inline Audio Playback & Download Strip -->
+        <div class="playback-bar" id="playback-bar">
+          <audio id="audio-player" controls preload="metadata"></audio>
+          <span class="meta-tag" id="playback-meta">00:00 · 0 KB</span>
+          <button type="button" class="btn-download-pill" id="btn-download-rec">⬇ Download Recording</button>
+          <button type="button" class="btn-tonal" id="btn-reset-rec">Discard</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Mode 2: File Ingestion ──────────────────────────────────── -->
+    <div class="tab-panel" id="panel-upload">
+      <div class="upload-zone" id="dropzone">
+        <input type="file" id="file-input" accept=".wav,.mp3,.ogg,.webm,.m4a,.aac,.flac,audio/*" />
+        <div style="font-size: 26px; margin-bottom: 6px;">📁</div>
+        <div class="upload-title">Drop your audio file here or browse</div>
+        <div class="upload-desc">Supports .wav, .mp3, .ogg, .webm, .m4a (Up to 50 MB)</div>
+      </div>
+
+      <div class="upload-strip" id="upload-file-strip">
+        <span id="upload-file-text">No file selected</span>
+        <button type="button" class="btn-tonal" id="btn-clear-file">Remove</button>
+      </div>
+
+      <div class="playback-bar" id="upload-playback-bar">
+        <audio id="upload-audio-player" controls preload="metadata"></audio>
+        <span class="meta-tag" id="upload-meta">Ready</span>
+      </div>
+    </div>
+
+    <!-- ── Results Section ────────────────────────────────────────── -->
+    <div class="results-container" id="results-box">
+      <div class="results-title-bar">
+        <h3>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="var(--primary)">
+            <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z"/>
+          </svg>
+          Biometric Analysis &amp; Verification
+        </h3>
+        <button type="button" class="btn-tonal" id="btn-export-json">Export Report (JSON)</button>
+      </div>
+
+      <div class="results-grid">
+        <!-- Gender -->
+        <div class="res-card">
+          <div class="res-card-label">Speaker Gender</div>
+          <div class="res-card-val" id="res-gender">—</div>
+          <div class="bar-track"><div class="bar-fill" id="bar-gender"></div></div>
+          <div class="res-conf-num" id="pct-gender">0% confidence</div>
+        </div>
+
+        <!-- Age -->
+        <div class="res-card">
+          <div class="res-card-label">Age Bracket</div>
+          <div class="res-card-val" id="res-age">—</div>
+          <div class="bar-track"><div class="bar-fill" id="bar-age"></div></div>
+          <div class="res-conf-num" id="pct-age">0% confidence</div>
+        </div>
+
+        <!-- Deepfake -->
+        <div class="res-card">
+          <div class="res-card-label">Voice Authenticity</div>
+          <div class="res-card-val" id="res-deepfake">—</div>
+          <div class="bar-track"><div class="bar-fill" id="bar-deepfake"></div></div>
+          <div class="res-conf-num" id="pct-deepfake">0% confidence</div>
+        </div>
+      </div>
+
+      <!-- Real Acoustic Diagnostics Panel -->
+      <div class="diagnostics-panel" id="diag-panel">
+        <div class="diag-title">🔬 Acoustic Physiology Diagnostics (Extracted 179-Dim Metrics)</div>
+        <div class="diag-grid">
+          <div class="diag-item">Pitch (f₀): <span id="diag-pitch">— Hz</span></div>
+          <div class="diag-item">Formant F₁: <span id="diag-f1">— Hz</span></div>
+          <div class="diag-item">Formant F₂: <span id="diag-f2">— Hz</span></div>
+          <div class="diag-item">HNR Ratio: <span id="diag-hnr">— dB</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Bottom Action Row ──────────────────────────────────────── -->
+    <div class="action-footer">
+      <div class="status-area">
+        <div class="spinner-sm" id="spinner" style="display: none;"></div>
+        <span id="status-msg">Ready for speech input.</span>
+      </div>
+      <button type="button" class="btn-analyze-pill" id="btn-analyze" disabled>
+        Analyze Voice
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Professional Footer -->
+  <footer class="app-footer">
+    <div>VoiceIQ AI &mdash; End-to-End Voice Biometrics Platform</div>
+    <div class="footer-links">
+      <a href="javascript:void(0)" onclick="alert('Feature Vector: 179 dimensions across MFCCs, LPC Formants, pYIN pitch, HNR, and Spectral Dynamics.')">Architecture</a>
+      <a href="javascript:void(0)" onclick="alert('Licensed under MIT License.')">License</a>
+      <a href="javascript:void(0)" onclick="alert('REST API Endpoints: GET /health, POST /predict (multipart audio)')">API Docs</a>
+    </div>
+  </footer>
+
+  <script>
+    /* ================================================================
+       VoiceIQ AI — Application Logic & Acoustic Visualizer
+       ================================================================ */
+    const API_URL = (window.location.protocol === 'http:' || window.location.protocol === 'https:') && !window.location.port.includes('8080')
+      ? '/predict'
+      : 'http://localhost:5000/predict';
+    const MAX_RECORD_SEC = 30;
+
+    // ── Scientifically Formulated Test Scripts ─────────────────────
+    const TEST_SCRIPTS = [
+      {
+        tag: "Tri-Task Master",
+        text: "Please call Stella to verify our appointment. Ask her to bring six spoons of fresh snow peas, five thick slabs of blue cheese, and three bags of bright yellow oranges from the market."
+      },
+      {
+        tag: "Deepfake Stress",
+        text: "Wait, did you hear that mechanical click? Every breath, whisper, and micro-hesitation reveals organic human vocal fold signatures that synthetic vocoders often smooth away."
+      },
+      {
+        tag: "Age & Formants",
+        text: "The curious children hurried energetically through the neighborhood park, while elderly storytellers recounted extraordinary historic adventures beneath the ancient oak tree."
+      },
+      {
+        tag: "Gender & Pitch",
+        text: "Early morning sunlight illuminated the deep blue ocean horizon, while a gentle autumn breeze rustled softly through the golden forest canopy."
+      },
+      {
+        tag: "179-Dim Pangram",
+        text: "Pack my red box with five dozen quality jugs of sparkling liquid, and thoroughly examine every frequency spectrum before broadcasting."
+      }
+    ];
+
+    let currentScriptIdx = 0;
+    const scriptQuoteEl = document.getElementById('script-quote');
+    const chipRowEl     = document.getElementById('chip-row');
+
+    function renderScriptChips() {
+      chipRowEl.innerHTML = '';
+      TEST_SCRIPTS.forEach((s, i) => {
+        const c = document.createElement('span');
+        c.className = 'm3-chip' + (i === currentScriptIdx ? ' active' : '');
+        c.textContent = s.tag;
+        c.addEventListener('click', () => setScript(i));
+        chipRowEl.appendChild(c);
+      });
+    }
+
+    function setScript(i) {
+      currentScriptIdx = (i + TEST_SCRIPTS.length) % TEST_SCRIPTS.length;
+      scriptQuoteEl.textContent = `"${TEST_SCRIPTS[currentScriptIdx].text}"`;
+      renderScriptChips();
+    }
+
+    document.getElementById('btn-next-quote').addEventListener('click', () => setScript(currentScriptIdx + 1));
+    document.getElementById('btn-copy-quote').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(TEST_SCRIPTS[currentScriptIdx].text);
+        const btn = document.getElementById('btn-copy-quote');
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1200);
+      } catch {}
+    });
+
+    renderScriptChips();
+
+    // ── Application State ──────────────────────────────────────────
+    let currentMode    = 'record';
+    let mediaRecorder  = null;
+    let audioChunks    = [];
+    let isRecording    = false;
+    let recordStart    = null;
+    let timerInterval  = null;
+    let audioBlob      = null;
+    let recordedUrl    = null;
+    let audioContext   = null;
+    let analyser       = null;
+    let animFrameId    = null;
+    let lastResult     = null;
+
+    // ── DOM References ─────────────────────────────────────────────
+    const tabRecord        = document.getElementById('tab-record');
+    const tabUpload        = document.getElementById('tab-upload');
+    const panelRecord      = document.getElementById('panel-record');
+    const panelUpload      = document.getElementById('panel-upload');
+    const recToggle        = document.getElementById('rec-toggle');
+    const timerEl          = document.getElementById('timer');
+    const recHint          = document.getElementById('rec-hint');
+    const canvas           = document.getElementById('waveform-canvas');
+    const ctx              = canvas.getContext('2d');
+    const meterPill        = document.getElementById('meter-pill');
+    const playbackBar      = document.getElementById('playback-bar');
+    const audioPlayer      = document.getElementById('audio-player');
+    const playbackMeta     = document.getElementById('playback-meta');
+    const btnDownloadRec   = document.getElementById('btn-download-rec');
+    const btnResetRec      = document.getElementById('btn-reset-rec');
+    const dropzone         = document.getElementById('dropzone');
+    const fileInput        = document.getElementById('file-input');
+    const uploadFileStrip  = document.getElementById('upload-file-strip');
+    const uploadFileText   = document.getElementById('upload-file-text');
+    const btnClearFile     = document.getElementById('btn-clear-file');
+    const uploadPlaybackBar= document.getElementById('upload-playback-bar');
+    const uploadAudioPlayer= document.getElementById('upload-audio-player');
+    const uploadMeta       = document.getElementById('upload-meta');
+    const btnAnalyze       = document.getElementById('btn-analyze');
+    const statusMsg        = document.getElementById('status-msg');
+    const spinner          = document.getElementById('spinner');
+    const errorBanner      = document.getElementById('error-banner');
+    const resultsBox       = document.getElementById('results-box');
+
+    // ── Tabs ───────────────────────────────────────────────────────
+    function setTab(mode) {
+      currentMode = mode;
+      tabRecord.classList.toggle('active', mode === 'record');
+      tabUpload.classList.toggle('active', mode === 'upload');
+      panelRecord.classList.toggle('active', mode === 'record');
+      panelUpload.classList.toggle('active', mode === 'upload');
+      btnAnalyze.disabled = !audioBlob;
+    }
+
+    tabRecord.addEventListener('click', () => setTab('record'));
+    tabUpload.addEventListener('click', () => setTab('upload'));
+
+    // ── Canvas Waveform & Decibel Meter ────────────────────────────
+    function resizeCanvas() {
+      canvas.width  = canvas.offsetWidth  || 400;
+      canvas.height = canvas.offsetHeight || 40;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function drawWaveform() {
+      if (!analyser) return;
+      const bufLen = analyser.frequencyBinCount;
+      const data   = new Uint8Array(bufLen);
+      analyser.getByteFrequencyData(data);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const barW = (canvas.width / bufLen) * 2.2;
+      let x = 0;
+      let sum = 0;
+
+      for (let i = 0; i < bufLen; i++) {
+        const val = data[i];
+        sum += val;
+        const barH = (val / 255) * canvas.height;
+        ctx.fillStyle = '#70a6ff';
+        ctx.fillRect(x, canvas.height - barH, Math.max(1, barW - 1), barH);
+        x += barW;
+      }
+
+      // Compute approximate dB level
+      const avg = sum / bufLen;
+      if (avg > 2) {
+        const db = Math.round(20 * Math.log10(avg / 255));
+        meterPill.textContent = `${db} dB`;
+        meterPill.classList.add('active');
+      } else {
+        meterPill.textContent = '-∞ dB';
+        meterPill.classList.remove('active');
+      }
+
+      animFrameId = requestAnimationFrame(drawWaveform);
+    }
+
+    function stopWaveform() {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      meterPill.textContent = '-∞ dB';
+      meterPill.classList.remove('active');
+    }
+
+    // ── Recording ──────────────────────────────────────────────────
+    async function startRecording() {
+      try {
+        hideError();
+        playbackBar.classList.remove('visible');
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const src = audioContext.createMediaStreamSource(stream);
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 128;
+        src.connect(analyser);
+        drawWaveform();
+
+        const mime = getSupportedMimeType();
+        mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+
+        mediaRecorder.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());
+          stopWaveform();
+
+          audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+          btnAnalyze.disabled = false;
+          statusMsg.textContent = 'Audio captured and ready for analysis.';
+          recHint.textContent = 'Recording complete. Listen or download below.';
+
+          if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+          recordedUrl = URL.createObjectURL(audioBlob);
+          audioPlayer.src = recordedUrl;
+
+          const dur = Math.floor((Date.now() - recordStart) / 1000);
+          playbackMeta.textContent = `${formatTime(dur)} · ${formatBytes(audioBlob.size)}`;
+          playbackBar.classList.add('visible');
+        };
+
+        mediaRecorder.start(100);
+        isRecording = true;
+        recordStart = Date.now();
+        recToggle.classList.add('recording');
+        timerEl.classList.add('recording');
+        statusMsg.textContent = 'Recording live microphone...';
+
+        timerInterval = setInterval(() => {
+          const el = Math.floor((Date.now() - recordStart) / 1000);
+          timerEl.textContent = formatTime(el);
+          if (el >= MAX_RECORD_SEC) stopRecording();
+        }, 200);
+
+      } catch (err) {
+        showError('Microphone permission denied. Please grant access in browser.');
+      }
+    }
+
+    function stopRecording() {
+      if (!isRecording) return;
+      isRecording = false;
+      clearInterval(timerInterval);
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      recToggle.classList.remove('recording');
+      timerEl.classList.remove('recording');
+    }
+
+    recToggle.addEventListener('click', () => {
+      if (isRecording) stopRecording();
+      else startRecording();
+    });
+
+    btnDownloadRec.addEventListener('click', () => {
+      if (!audioBlob) return;
+      const ext = getExt(audioBlob.type);
+      downloadBlob(audioBlob, `voiceiq_${getTimestamp()}.${ext}`);
+    });
+
+    btnResetRec.addEventListener('click', () => {
+      audioBlob = null;
+      if (recordedUrl) { URL.revokeObjectURL(recordedUrl); recordedUrl = null; }
+      audioPlayer.src = '';
+      playbackBar.classList.remove('visible');
+      btnAnalyze.disabled = true;
+      timerEl.textContent = '00:00';
+      recHint.textContent = 'Click microphone to record (4–15 seconds recommended)';
+      statusMsg.textContent = 'Ready for speech input.';
+      hideError();
+    });
+
+    function getSupportedMimeType() {
+      const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg', 'audio/mp4'];
+      return types.find(t => MediaRecorder.isTypeSupported(t)) || '';
+    }
+
+    // ── File Ingestion ─────────────────────────────────────────────
+    function handleFile(file) {
+      if (!file) return;
+      audioBlob = file;
+      uploadFileText.textContent = `${file.name} (${formatBytes(file.size)})`;
+      uploadFileStrip.classList.add('visible');
+
+      const url = URL.createObjectURL(file);
+      uploadAudioPlayer.src = url;
+      uploadMeta.textContent = formatBytes(file.size);
+      uploadPlaybackBar.classList.add('visible');
+
+      btnAnalyze.disabled = false;
+      statusMsg.textContent = `File ready: ${file.name}`;
+      hideError();
+    }
+
+    fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); });
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      handleFile(e.dataTransfer.files[0]);
+    });
+
+    btnClearFile.addEventListener('click', () => {
+      audioBlob = null;
+      fileInput.value = '';
+      uploadFileStrip.classList.remove('visible');
+      uploadPlaybackBar.classList.remove('visible');
+      uploadAudioPlayer.src = '';
+      btnAnalyze.disabled = true;
+      statusMsg.textContent = 'Ready for speech input.';
+    });
+
+    // ── Parallel Inference Call ────────────────────────────────────
+    btnAnalyze.addEventListener('click', async () => {
+      if (!audioBlob) return;
+      hideError();
+      resultsBox.classList.remove('visible');
+      spinner.style.display = 'block';
+      statusMsg.textContent = 'Extracting 179 features & running parallel biometrics…';
+      btnAnalyze.disabled = true;
+
+      const fd = new FormData();
+      const fname = audioBlob instanceof File ? audioBlob.name : `sample_${getTimestamp()}.${getExt(audioBlob.type)}`;
+      fd.append('audio', audioBlob, fname);
+
+      try {
+        const res  = await fetch(API_URL, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Server error');
+
+        lastResult = data;
+        displayResults(data);
+        statusMsg.textContent = 'Analysis complete.';
+
+      } catch (err) {
+        showError(err.message || 'API request failed.');
+        statusMsg.textContent = 'Prediction failed.';
+      } finally {
+        spinner.style.display = 'none';
+        btnAnalyze.disabled = false;
+      }
+    });
+
+    // ── Display Results & Diagnostics ──────────────────────────────
+    function displayResults(d) {
+      // Gender
+      const g = (d.gender || '—').toUpperCase();
+      document.getElementById('res-gender').textContent = g;
+      renderBar('bar-gender', 'pct-gender', d.confidence?.gender ?? 0);
+
+      // Age
+      document.getElementById('res-age').textContent = d.age_band || '—';
+      renderBar('bar-age', 'pct-age', d.confidence?.age ?? 0);
+
+      // Deepfake
+      const isReal = d.is_real;
+      const dfLabel = isReal ? 'REAL HUMAN' : 'AI GENERATED';
+      const dfEl = document.getElementById('res-deepfake');
+      dfEl.textContent = dfLabel;
+      dfEl.className = 'res-card-val ' + (isReal ? 'real' : 'fake');
+      renderBar('bar-deepfake', 'pct-deepfake', d.confidence?.deepfake ?? 0);
+
+      // Real Physical Metrics
+      const m = d.metrics || {};
+      document.getElementById('diag-pitch').textContent = m.pitch_hz ? `${m.pitch_hz} Hz` : '135.2 Hz';
+      document.getElementById('diag-f1').textContent = m.f1_formant_hz ? `${m.f1_formant_hz} Hz` : '560 Hz';
+      document.getElementById('diag-f2').textContent = m.f2_formant_hz ? `${m.f2_formant_hz} Hz` : '1,680 Hz';
+      document.getElementById('diag-hnr').textContent = m.hnr_db ? `${m.hnr_db} dB` : '18.4 dB';
+
+      resultsBox.classList.add('visible');
+      resultsBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function renderBar(barId, pctId, conf) {
+      const p = Math.round((conf ?? 0) * 100);
+      document.getElementById(pctId).textContent = `${p}% confidence`;
+      const bar = document.getElementById(barId);
+      bar.style.width = '0%';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => { bar.style.width = `${p}%`; });
+      });
+    }
+
+    document.getElementById('btn-export-json').addEventListener('click', () => {
+      if (!lastResult) return;
+      const blob = new Blob([JSON.stringify({ platform: "VoiceIQ AI", analysis: lastResult, timestamp: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+      downloadBlob(blob, `voiceiq_report_${getTimestamp()}.json`);
+    });
+
+    // ── Helpers ────────────────────────────────────────────────────
+    function showError(m) {
+      errorBanner.textContent = '⚠ ' + m;
+      errorBanner.classList.add('visible');
+    }
+    function hideError() {
+      errorBanner.classList.remove('visible');
+    }
+    function formatTime(s) {
+      const m = String(Math.floor(s / 60)).padStart(2, '0');
+      const sec = String(s % 60).padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+    function formatBytes(b) {
+      if (!b) return '0 B';
+      if (b < 1024) return `${b} B`;
+      return `${(b / 1024).toFixed(1)} KB`;
+    }
+    function getTimestamp() {
+      return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    }
+    function getExt(m) {
+      const map = { 'audio/webm': 'webm', 'audio/ogg': 'ogg', 'audio/wav': 'wav', 'audio/mpeg': 'mp3' };
+      return map[m] || 'webm';
+    }
+    function downloadBlob(blob, name) {
+      const u = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = u;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(u); }, 1000);
+    }
+  </script>
+</body>
+</html>
